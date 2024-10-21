@@ -13,3 +13,22 @@ NOs can find documentation w.r.t setting a system requirements, how to set a nod
 ## Integration testing
 
 Upcoming
+
+## Safety version features
+- `stader-cli service start|stop|pause|terminate` returns error if `allowVCContainers` settings param is empty or `false`
+- `stader-cli validator deposit` returns error if `createNewValidators` settings param is empty or `false`
+
+## New `user-settings.yaml` params
+```yaml
+root:
+  createNewValidators: "false|true"
+  allowVCContainers: "false|true"
+```
+
+## Build and run safety run version
+```bash
+# build cli
+./build-release.sh -c -v v1.6.1-safety-run
+# run cli
+./build/v1.6.1-safety-run/stader-cli-[arch] [args] 
+```

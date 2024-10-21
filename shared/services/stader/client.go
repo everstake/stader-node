@@ -584,6 +584,9 @@ func (c *Client) executeScript(verbose, noDeps bool, network, version, path, dat
 
 // Start the Stader service
 func (c *Client) StartService(composeFiles []string) error {
+	if err := c.CheckAllowVCContainers(); err != nil {
+		return err
+	}
 
 	// Start the API container first
 	cmd, err := c.compose([]string{}, "up -d")
@@ -605,6 +608,10 @@ func (c *Client) StartService(composeFiles []string) error {
 
 // Pause the Stader service
 func (c *Client) PauseService(composeFiles []string) error {
+	if err := c.CheckAllowVCContainers(); err != nil {
+		return err
+	}
+
 	cmd, err := c.compose(composeFiles, "stop")
 	if err != nil {
 		return err
@@ -614,6 +621,10 @@ func (c *Client) PauseService(composeFiles []string) error {
 
 // Stop the Stader service
 func (c *Client) StopService(composeFiles []string) error {
+	if err := c.CheckAllowVCContainers(); err != nil {
+		return err
+	}
+
 	cmd, err := c.compose(composeFiles, "down -v")
 	if err != nil {
 		return err
@@ -623,6 +634,10 @@ func (c *Client) StopService(composeFiles []string) error {
 
 // Stop the Stader service and remove the config folder
 func (c *Client) TerminateService(composeFiles []string, configPath string) error {
+	if err := c.CheckAllowVCContainers(); err != nil {
+		return err
+	}
+
 	// Get the command to run with root privileges
 	rootCmd, err := c.getEscalationCommand()
 	if err != nil {
@@ -1810,4 +1825,26 @@ func (c *Client) readOutput(cmdText string) ([]byte, error) {
 	// Run command and return output
 	return cmd.Output()
 
+}
+
+func (c *Client) CheckCreateNewValidators() error {
+	cfg, _, err := c.LoadConfig()
+	if err != nil {
+		return err
+	}
+	if v, ok := cfg.CreateNewValidators.Value.(bool); !ok || v == false {
+		return errors.New("createNewValidators should be true to deposit")
+	}
+	return nil
+}
+
+func (c *Client) CheckAllowVCContainers() error {
+	cfg, _, err := c.LoadConfig()
+	if err != nil {
+		return err
+	}
+	if v, ok := cfg.AllowVCContainers.Value.(bool); !ok || v == false {
+		return errors.New("allowVCContainers should be true to run containers")
+	}
+	return nil
 }

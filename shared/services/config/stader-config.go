@@ -137,6 +137,9 @@ type StaderConfig struct {
 	// MEV-Boost
 	EnableMevBoost config.Parameter `yaml:"enableMevBoost,omitempty"`
 	MevBoost       *MevBoostConfig  `yaml:"mevBoost,omitempty"`
+
+	CreateNewValidators config.Parameter `yaml:"createNewValidators,omitempty"`
+	AllowVCContainers   config.Parameter `yaml:"allowVCContainers,omitempty"`
 }
 
 // Load configuration settings from a file
@@ -449,6 +452,30 @@ func NewStaderConfig(staderDir string, isNativeMode bool) *StaderConfig {
 			CanBeBlank:           false,
 			OverwriteOnUpgrade:   true,
 		},
+
+		CreateNewValidators: config.Parameter{
+			ID:                   "createNewValidators",
+			Name:                 "Create new validators",
+			Description:          "Create and run new validators.",
+			Type:                 config.ParameterType_Bool,
+			Default:              map[config.Network]interface{}{config.Network_All: false},
+			AffectsContainers:    []config.ContainerID{config.ContainerID_Validator},
+			EnvironmentVariables: []string{"CREATE_NEW_VALIDATORS"},
+			CanBeBlank:           true,
+			OverwriteOnUpgrade:   true,
+		},
+
+		AllowVCContainers: config.Parameter{
+			ID:                   "allowVCContainers",
+			Name:                 "Allow VC Containers",
+			Description:          "Allow to run VC containers.",
+			Type:                 config.ParameterType_Bool,
+			Default:              map[config.Network]interface{}{config.Network_All: false},
+			AffectsContainers:    []config.ContainerID{config.ContainerID_Validator, config.ContainerID_Node},
+			EnvironmentVariables: []string{"ALLOW_VC_CONTAINERS"},
+			CanBeBlank:           true,
+			OverwriteOnUpgrade:   true,
+		},
 	}
 
 	// Set the defaults for choices
@@ -549,6 +576,8 @@ func (cfg *StaderConfig) GetParameters() []*config.Parameter {
 		&cfg.NodeMetricsPort,
 		&cfg.ExporterMetricsPort,
 		&cfg.EnableMevBoost,
+		&cfg.CreateNewValidators,
+		&cfg.AllowVCContainers,
 	}
 }
 

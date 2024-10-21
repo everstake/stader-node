@@ -595,6 +595,10 @@ func startService(
 		return fmt.Errorf("Error loading user settings: %w", err)
 	}
 
+	if err = staderClient.CheckAllowVCContainers(); err != nil {
+		return err
+	}
+
 	// Check for unsupported clients
 	if cfg.ExecutionClientMode.Value.(cfgtypes.Mode) == cfgtypes.Mode_Local {
 		selectedEc := cfg.ExecutionClient.Value.(cfgtypes.ExecutionClient)
@@ -1026,6 +1030,10 @@ func pauseService(c *cli.Context) error {
 		return err
 	}
 	defer staderClient.Close()
+
+	if err = staderClient.CheckAllowVCContainers(); err != nil {
+		return err
+	}
 
 	// Get the config
 	cfg, _, err := staderClient.LoadConfig()

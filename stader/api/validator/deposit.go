@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -301,6 +302,11 @@ func nodeDeposit(c *cli.Context, baseAmountWei, utilityAmountWei, numValidators 
 		return nil, err
 	}
 	w, err := services.GetWallet(c)
+
+	if v, ok := cfg.CreateNewValidators.Value.(bool); !ok || v == false {
+		return nil, errors.New("createNewValidators should be true to deposit")
+	}
+
 	if err != nil {
 		return nil, err
 	}

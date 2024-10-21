@@ -22,6 +22,10 @@ func nodeDeposit(c *cli.Context) error {
 	}
 	defer staderClient.Close()
 
+	if err = staderClient.CheckCreateNewValidators(); err != nil {
+		return err
+	}
+
 	// Check and assign the EC status
 	err = cliutils.CheckClientStatus(staderClient)
 	if err != nil {
