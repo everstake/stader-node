@@ -584,10 +584,6 @@ func (c *Client) executeScript(verbose, noDeps bool, network, version, path, dat
 
 // Start the Stader service
 func (c *Client) StartService(composeFiles []string) error {
-	if err := c.CheckAllowVCContainers(); err != nil {
-		return err
-	}
-
 	// Start the API container first
 	cmd, err := c.compose([]string{}, "up -d")
 	if err != nil {
@@ -608,10 +604,6 @@ func (c *Client) StartService(composeFiles []string) error {
 
 // Pause the Stader service
 func (c *Client) PauseService(composeFiles []string) error {
-	if err := c.CheckAllowVCContainers(); err != nil {
-		return err
-	}
-
 	cmd, err := c.compose(composeFiles, "stop")
 	if err != nil {
 		return err
@@ -621,10 +613,6 @@ func (c *Client) PauseService(composeFiles []string) error {
 
 // Stop the Stader service
 func (c *Client) StopService(composeFiles []string) error {
-	if err := c.CheckAllowVCContainers(); err != nil {
-		return err
-	}
-
 	cmd, err := c.compose(composeFiles, "down -v")
 	if err != nil {
 		return err
@@ -634,10 +622,6 @@ func (c *Client) StopService(composeFiles []string) error {
 
 // Stop the Stader service and remove the config folder
 func (c *Client) TerminateService(composeFiles []string, configPath string) error {
-	if err := c.CheckAllowVCContainers(); err != nil {
-		return err
-	}
-
 	// Get the command to run with root privileges
 	rootCmd, err := c.getEscalationCommand()
 	if err != nil {
@@ -1469,18 +1453,20 @@ func (c *Client) deployTemplates(cfg *config.StaderConfig, staderDir string, set
 	deployedContainers = append(deployedContainers, guardianComposePath)
 	deployedContainers = append(deployedContainers, filepath.Join(overrideFolder, config.GuardianContainerName+composeFileSuffix))
 
-	// Validator
-	contents, err = envsubst.ReadFile(filepath.Join(templatesFolder, config.ValidatorContainerName+templateSuffix))
-	if err != nil {
-		return []string{}, fmt.Errorf("error reading and substituting validator container template: %w", err)
+	if c.IsVCContainersAllowed(cfg) {
+		// Validator
+		contents, err = envsubst.ReadFile(filepath.Join(templatesFolder, config.ValidatorContainerName+templateSuffix))
+		if err != nil {
+			return []string{}, fmt.Errorf("error reading and substituting validator container template: %w", err)
+		}
+		validatorComposePath := filepath.Join(runtimeFolder, config.ValidatorContainerName+composeFileSuffix)
+		err = ioutil.WriteFile(validatorComposePath, contents, 0664)
+		if err != nil {
+			return []string{}, fmt.Errorf("could not write validator container file to %s: %w", validatorComposePath, err)
+		}
+		deployedContainers = append(deployedContainers, validatorComposePath)
+		deployedContainers = append(deployedContainers, filepath.Join(overrideFolder, config.ValidatorContainerName+composeFileSuffix))
 	}
-	validatorComposePath := filepath.Join(runtimeFolder, config.ValidatorContainerName+composeFileSuffix)
-	err = ioutil.WriteFile(validatorComposePath, contents, 0664)
-	if err != nil {
-		return []string{}, fmt.Errorf("could not write validator container file to %s: %w", validatorComposePath, err)
-	}
-	deployedContainers = append(deployedContainers, validatorComposePath)
-	deployedContainers = append(deployedContainers, filepath.Join(overrideFolder, config.ValidatorContainerName+composeFileSuffix))
 
 	// Check the EC mode to see if it needs to be deployed
 	if cfg.ExecutionClientMode.Value.(cfgtypes.Mode) == cfgtypes.Mode_Local {
@@ -1497,19 +1483,21 @@ func (c *Client) deployTemplates(cfg *config.StaderConfig, staderDir string, set
 		deployedContainers = append(deployedContainers, filepath.Join(overrideFolder, config.Eth1ContainerName+composeFileSuffix))
 	}
 
-	// Check the Consensus mode
-	if cfg.ConsensusClientMode.Value.(cfgtypes.Mode) == cfgtypes.Mode_Local {
-		contents, err = envsubst.ReadFile(filepath.Join(templatesFolder, config.Eth2ContainerName+templateSuffix))
-		if err != nil {
-			return []string{}, fmt.Errorf("error reading and substituting consensus client container template: %w", err)
+	if c.IsVCContainersAllowed(cfg) {
+		// Check the Consensus mode
+		if cfg.ConsensusClientMode.Value.(cfgtypes.Mode) == cfgtypes.Mode_Local {
+			contents, err = envsubst.ReadFile(filepath.Join(templatesFolder, config.Eth2ContainerName+templateSuffix))
+			if err != nil {
+				return []string{}, fmt.Errorf("error reading and substituting consensus client container template: %w", err)
+			}
+			eth2ComposePath := filepath.Join(runtimeFolder, config.Eth2ContainerName+composeFileSuffix)
+			err = ioutil.WriteFile(eth2ComposePath, contents, 0664)
+			if err != nil {
+				return []string{}, fmt.Errorf("could not write consensus client container file to %s: %w", eth2ComposePath, err)
+			}
+			deployedContainers = append(deployedContainers, eth2ComposePath)
+			deployedContainers = append(deployedContainers, filepath.Join(overrideFolder, config.Eth2ContainerName+composeFileSuffix))
 		}
-		eth2ComposePath := filepath.Join(runtimeFolder, config.Eth2ContainerName+composeFileSuffix)
-		err = ioutil.WriteFile(eth2ComposePath, contents, 0664)
-		if err != nil {
-			return []string{}, fmt.Errorf("could not write consensus client container file to %s: %w", eth2ComposePath, err)
-		}
-		deployedContainers = append(deployedContainers, eth2ComposePath)
-		deployedContainers = append(deployedContainers, filepath.Join(overrideFolder, config.Eth2ContainerName+composeFileSuffix))
 	}
 
 	// Check the metrics containers
@@ -1838,13 +1826,9 @@ func (c *Client) CheckCreateNewValidators() error {
 	return nil
 }
 
-func (c *Client) CheckAllowVCContainers() error {
-	cfg, _, err := c.LoadConfig()
-	if err != nil {
-		return err
+func (c *Client) IsVCContainersAllowed(cfg *config.StaderConfig) bool {
+	if v, ok := cfg.AllowVCContainers.Value.(bool); ok && v {
+		return true
 	}
-	if v, ok := cfg.AllowVCContainers.Value.(bool); !ok || v == false {
-		return errors.New("allowVCContainers should be true to run containers")
-	}
-	return nil
+	return false
 }

@@ -15,7 +15,7 @@ NOs can find documentation w.r.t setting a system requirements, how to set a nod
 Upcoming
 
 ## Safety version features
-- `stader-cli service start|stop|pause|terminate` returns error if `allowVCContainers` settings param is empty or `false`
+- VC containers will not be launched if the `allowVCContainers` setting is empty or set to `false`.
 - `stader-cli validator deposit` returns error if `createNewValidators` settings param is empty or `false`
 
 ## New `user-settings.yaml` params

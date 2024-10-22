@@ -152,7 +152,14 @@ func nodeDeposit(c *cli.Context) error {
 		fmt.Println("Validator creation process initiate, please wait...")
 	}
 
-	canNodeDepositResponse, err := staderClient.CanNodeDeposit(baseAmount, utilityAmount, big.NewInt(int64(numValidators)), true)
+	cfg, _, err := staderClient.LoadConfig()
+	if err != nil {
+		return err
+	}
+
+	reloadKeys := staderClient.IsVCContainersAllowed(cfg)
+
+	canNodeDepositResponse, err := staderClient.CanNodeDeposit(baseAmount, utilityAmount, big.NewInt(int64(numValidators)), reloadKeys)
 	if err != nil {
 		return err
 	}
@@ -178,7 +185,7 @@ func nodeDeposit(c *cli.Context) error {
 	}
 
 	// Make deposit
-	response, err := staderClient.NodeDeposit(baseAmount, big.NewInt(int64(numValidators)), utilityAmount, true)
+	response, err := staderClient.NodeDeposit(baseAmount, big.NewInt(int64(numValidators)), utilityAmount, reloadKeys)
 	if err != nil {
 		return err
 	}
