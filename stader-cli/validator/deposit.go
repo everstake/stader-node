@@ -157,7 +157,7 @@ func nodeDeposit(c *cli.Context) error {
 		return err
 	}
 
-	reloadKeys := staderClient.IsVCContainersAllowed(cfg)
+	reloadKeys := staderClient.IsCreateNewValidatorsEnabled(cfg)
 
 	canNodeDepositResponse, err := staderClient.CanNodeDeposit(baseAmount, utilityAmount, big.NewInt(int64(numValidators)), reloadKeys)
 	if err != nil {

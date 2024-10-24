@@ -1824,6 +1824,13 @@ func (c *Client) CheckCreateNewValidators() error {
 	return nil
 }
 
+func (c *Client) IsCreateNewValidatorsEnabled(cfg *config.StaderConfig) bool {
+	if v, ok := cfg.CreateNewValidators.Value.(bool); ok && v {
+		return true
+	}
+	return false
+}
+
 func (c *Client) IsVCContainersAllowed(cfg *config.StaderConfig) bool {
 	if v, ok := cfg.AllowVCContainers.Value.(bool); ok && v {
 		return true
