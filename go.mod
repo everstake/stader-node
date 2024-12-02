@@ -6,7 +6,7 @@ require (
 	github.com/a8m/envsubst v1.3.0
 	github.com/alessio/shellescape v1.4.1
 	github.com/blang/semver/v4 v4.0.0
-	github.com/btcsuite/btcd v0.24.0
+	github.com/btcsuite/btcd v0.24.2
 	github.com/btcsuite/btcd/btcutil v1.1.5
 	github.com/docker/docker v24.0.9+incompatible
 	github.com/dustin/go-humanize v1.0.0
