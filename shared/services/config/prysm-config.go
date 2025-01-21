@@ -27,15 +27,15 @@ import (
 )
 
 const (
-	prysmBnTagTest string = "staderlabs/prysm:v5.0.3"
-	prysmVcTagTest string = "staderlabs/prysm:v5.0.3"
+	prysmBnTagTest string = "staderlabs/prysm:v5.1.2"
+	prysmVcTagTest string = "staderlabs/prysm:v5.1.2"
 
-	prysmBnTagProd string = "staderlabs/prysm:v5.0.3"
-	prysmVcTagProd string = "staderlabs/prysm:v5.0.3"
+	prysmBnTagProd string = "staderlabs/prysm:v5.1.2"
+	prysmVcTagProd string = "staderlabs/prysm:v5.1.2"
 
 	defaultPrysmRpcPort     uint16 = 5053
 	defaultPrysmOpenRpcPort bool   = false
-	defaultPrysmMaxPeers    uint16 = 45
+	defaultPrysmMaxPeers    uint16 = 70
 )
 
 // Configuration for Prysm

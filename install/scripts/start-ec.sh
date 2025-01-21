@@ -268,7 +268,6 @@ if [ "$CLIENT" = "besu" ]; then
         --rpc-ws-port=${EC_WS_PORT:-8546} \
         --host-allowlist=* \
         --rpc-http-max-active-connections=1024 \
-        --data-storage-format=bonsai \
         --nat-method=docker \
         --p2p-host=$EXTERNAL_IP \
         --engine-rpc-enabled \
@@ -298,7 +297,7 @@ if [ "$CLIENT" = "besu" ]; then
     fi
 
     
-    CMD="$CMD --fast-sync-min-peers=3 --sync-mode=X_CHECKPOINT"
+    CMD="$CMD --sync-mode=SNAP --data-storage-format=BONSAI"
 
     if [ "$BESU_JVM_HEAP_SIZE" -gt "0" ]; then
         CMD="env JAVA_OPTS=\"-Xmx${BESU_JVM_HEAP_SIZE}m\" $CMD"
