@@ -28,7 +28,7 @@ root:
 ## Build and run safety run version
 ```bash
 # build cli
-./build-release.sh -c -v v1.6.1-safety-run
+./build-release.sh -c -v v1.6.3-safety-run
 # run cli
-./build/v1.6.1-safety-run/stader-cli-[arch] [args] 
+./build/v1.6.3-safety-run/stader-cli-[arch] [args] 
 ```
