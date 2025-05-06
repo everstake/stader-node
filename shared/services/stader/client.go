@@ -1454,7 +1454,7 @@ func (c *Client) deployTemplates(cfg *config.StaderConfig, staderDir string, set
 
 	// Validator
 	ssvMigration, _ := cfg.StaderNode.SsvMigration.Value.(bool)
-	if c.IsVCContainersAllowed(cfg) || !ssvMigration {
+	if c.IsVCContainersAllowed(cfg) && !ssvMigration {
 		contents, err = envsubst.ReadFile(filepath.Join(templatesFolder, config.ValidatorContainerName+templateSuffix))
 		if err != nil {
 			return []string{}, fmt.Errorf("error reading and substituting validator container template: %w", err)
