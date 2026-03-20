@@ -583,7 +583,6 @@ func (c *Client) executeScript(verbose, noDeps bool, network, version, path, dat
 
 // Start the Stader service
 func (c *Client) StartService(composeFiles []string) error {
-
 	// Start the API container first
 	cmd, err := c.compose([]string{}, "up -d")
 	if err != nil {
@@ -1454,9 +1453,8 @@ func (c *Client) deployTemplates(cfg *config.StaderConfig, staderDir string, set
 	deployedContainers = append(deployedContainers, filepath.Join(overrideFolder, config.GuardianContainerName+composeFileSuffix))
 
 	// Validator
-
 	ssvMigration, _ := cfg.StaderNode.SsvMigration.Value.(bool)
-	if !ssvMigration {
+	if c.IsVCContainersAllowed(cfg) && !ssvMigration {
 		contents, err = envsubst.ReadFile(filepath.Join(templatesFolder, config.ValidatorContainerName+templateSuffix))
 		if err != nil {
 			return []string{}, fmt.Errorf("error reading and substituting validator container template: %w", err)
@@ -1813,4 +1811,29 @@ func (c *Client) readOutput(cmdText string) ([]byte, error) {
 	// Run command and return output
 	return cmd.Output()
 
+}
+
+func (c *Client) CheckCreateNewValidators() error {
+	cfg, _, err := c.LoadConfig()
+	if err != nil {
+		return err
+	}
+	if v, ok := cfg.CreateNewValidators.Value.(bool); !ok || v == false {
+		return errors.New("createNewValidators should be true to deposit")
+	}
+	return nil
+}
+
+func (c *Client) IsCreateNewValidatorsEnabled(cfg *config.StaderConfig) bool {
+	if v, ok := cfg.CreateNewValidators.Value.(bool); ok && v {
+		return true
+	}
+	return false
+}
+
+func (c *Client) IsVCContainersAllowed(cfg *config.StaderConfig) bool {
+	if v, ok := cfg.AllowVCContainers.Value.(bool); ok && v {
+		return true
+	}
+	return false
 }
